@@ -36,3 +36,7 @@ coverage/
 # Archivos temporales
 *.tmp
 *.temp
+
+# Vercel
+.vercel
+.vercel_build_output

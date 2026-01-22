@@ -1,0 +1,453 @@
+openapi: 3.0.3
+info:
+  title: API Confirmación de Asistencia - Boda Diter y Vivian
+  description: |
+    API REST para gestionar las confirmaciones de asistencia a la boda de Diter y Vivian.
+    
+    ## Características principales:
+    - ✅ Registro de confirmaciones de asistencia
+    - ✅ Consulta de todas las confirmaciones (requiere autenticación)
+    - ✅ Autenticación JWT para los novios
+    - ✅ Validación de datos
+    
+    ## Ambientes:
+    - **Desarrollo**: https://boda-diter-vivian-dev.onrender.com
+    - **Producción**: https://boda-diter-vivian-prod.onrender.com
+    
+    ## Autenticación:
+    Para acceder a los endpoints protegidos, primero debes autenticarte en `/auth/login` 
+    y luego usar el token JWT en el header `Authorization: Bearer <token>`
+    
+  version: 2.0.0
+  contact:
+    name: Soporte Técnico
+    email: soporte@boda-diter-vivian.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://boda-diter-vivian-prod.onrender.com
+    description: Servidor de Producción
+  - url: https://boda-diter-vivian-dev.onrender.com
+    description: Servidor de Desarrollo
+  - url: http://localhost:3000
+    description: Servidor Local
+
+tags:
+  - name: Raíz
+    description: Información general de la API
+  - name: Autenticación
+    description: Endpoints para autenticación de administradores (novios)
+  - name: Confirmaciones
+    description: Endpoints para gestionar confirmaciones de asistencia
+
+paths:
+  /:
+    get:
+      tags:
+        - Raíz
+      summary: Información de la API
+      description: Retorna información básica sobre la API y sus endpoints disponibles
+      responses:
+        '200':
+          description: Información de la API obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: API para la confirmación de asistencia a la boda de Diter y Vivian
+                  version:
+                    type: string
+                    example: 2.0.0
+                  endpoints:
+                    type: object
+                    properties:
+                      crear:
+                        type: string
+                        example: POST /boda/asistencia
+                      obtenerTodas:
+                        type: string
+                        example: GET /boda/asistencia (🔒 Requiere autenticación)
+                      login:
+                        type: string
+                        example: POST /auth/login
+                      documentacion:
+                        type: string
+                        example: GET /api-docs
+
+  /auth/login:
+    post:
+      tags:
+        - Autenticación
+      summary: Iniciar sesión (solo para novios)
+      description: |
+        Genera un token JWT válido por 24 horas para acceder a endpoints protegidos.
+        Este endpoint es exclusivo para que los novios puedan ver todas las confirmaciones.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  description: Nombre de usuario de los novios
+                  example: diter-vivian
+                password:
+                  type: string
+                  format: password
+                  description: Contraseña de acceso
+                  example: BodaDyV2026!
+      responses:
+        '200':
+          description: Inicio de sesión exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Inicio de sesión exitoso
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        description: Token JWT para autenticación
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                      expiresIn:
+                        type: string
+                        example: 24h
+                      username:
+                        type: string
+                        example: diter-vivian
+        '400':
+          description: Faltan campos requeridos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: Usuario y contraseña son requeridos
+        '401':
+          description: Credenciales incorrectas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: Usuario o contraseña incorrectos
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /boda/asistencia:
+    post:
+      tags:
+        - Confirmaciones
+      summary: Registrar confirmación de asistencia
+      description: |
+        Permite a los invitados registrar su confirmación de asistencia a la boda.
+        Este endpoint es público y no requiere autenticación.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmacionInput'
+            examples:
+              asistira:
+                summary: Invitado que SÍ asistirá
+                value:
+                  nombre_completo: Juan Pérez García
+                  correo_electronico: juan.perez@example.com
+                  telefono: "+51987654321"
+                  asistira: true
+                  numero_invitados: 2
+                  cancion_favorita: Bailando - Enrique Iglesias
+                  mensaje: ¡Felicidades a los novios! Muy emocionado por su boda
+              no_asistira:
+                summary: Invitado que NO asistirá
+                value:
+                  nombre_completo: María López
+                  correo_electronico: maria.lopez@example.com
+                  telefono: "+51987654322"
+                  asistira: false
+                  numero_invitados: 0
+                  mensaje: Lamentablemente no podré asistir, pero les deseo lo mejor
+      responses:
+        '201':
+          description: Confirmación creada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Confirmación de asistencia creada exitosamente
+                  data:
+                    $ref: '#/components/schemas/ConfirmacionAsistencia'
+        '400':
+          description: Error de validación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                campos_faltantes:
+                  summary: Campos requeridos faltantes
+                  value:
+                    success: false
+                    message: "Faltan los siguientes campos requeridos: nombre_completo, correo_electronico"
+                email_invalido:
+                  summary: Formato de email inválido
+                  value:
+                    success: false
+                    message: El formato del correo electrónico no es válido
+                body_vacio:
+                  summary: Body vacío
+                  value:
+                    success: false
+                    message: El cuerpo de la solicitud no puede estar vacío
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - Confirmaciones
+      summary: Obtener todas las confirmaciones (🔒 Protegido)
+      description: |
+        Retorna la lista completa de todas las confirmaciones de asistencia.
+        **Requiere autenticación JWT** (solo para los novios).
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de confirmaciones obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConfirmacionAsistencia'
+              example:
+                success: true
+                data:
+                  - id: 1
+                    nombre_completo: Juan Pérez García
+                    correo_electronico: juan.perez@example.com
+                    telefono: "+51987654321"
+                    asistira: true
+                    numero_invitados: 2
+                    cancion_favorita: Bailando - Enrique Iglesias
+                    mensaje: ¡Felicidades a los novios!
+                    created_at: "2026-01-19T10:30:00Z"
+                    updated_at: "2026-01-19T10:30:00Z"
+                  - id: 2
+                    nombre_completo: María López
+                    correo_electronico: maria.lopez@example.com
+                    telefono: "+51987654322"
+                    asistira: false
+                    numero_invitados: 0
+                    cancion_favorita: null
+                    mensaje: Lamentablemente no podré asistir
+                    created_at: "2026-01-19T11:15:00Z"
+                    updated_at: "2026-01-19T11:15:00Z"
+        '401':
+          description: No autorizado - Token faltante o inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                sin_token:
+                  summary: Token no proporcionado
+                  value:
+                    success: false
+                    message: Token no proporcionado
+                token_invalido:
+                  summary: Token inválido
+                  value:
+                    success: false
+                    message: Token inválido o expirado
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Token JWT obtenido del endpoint `/auth/login`.
+        Formato: `Authorization: Bearer <token>`
+
+  schemas:
+    ConfirmacionAsistencia:
+      type: object
+      description: Modelo completo de una confirmación de asistencia (con ID y timestamps)
+      properties:
+        id:
+          type: integer
+          description: ID único de la confirmación
+          example: 1
+        nombre_completo:
+          type: string
+          description: Nombre completo del invitado
+          example: Juan Pérez García
+        correo_electronico:
+          type: string
+          format: email
+          description: Correo electrónico del invitado
+          example: juan.perez@example.com
+        telefono:
+          type: string
+          nullable: true
+          description: Número de teléfono del invitado (opcional)
+          example: "+51987654321"
+        asistira:
+          type: boolean
+          description: Indica si el invitado asistirá a la boda
+          example: true
+        numero_invitados:
+          type: integer
+          description: Número de personas que asistirán (incluyendo al invitado)
+          minimum: 0
+          example: 2
+        cancion_favorita:
+          type: string
+          nullable: true
+          description: Canción favorita del invitado para la boda (opcional)
+          example: Bailando - Enrique Iglesias
+        mensaje:
+          type: string
+          nullable: true
+          description: Mensaje de felicitación o comentario (opcional)
+          example: ¡Felicidades a los novios! Muy emocionado por su boda
+        created_at:
+          type: string
+          format: date-time
+          description: Fecha y hora de creación del registro
+          example: "2026-01-19T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Fecha y hora de última actualización
+          example: "2026-01-19T10:30:00Z"
+
+    ConfirmacionInput:
+      type: object
+      description: Datos requeridos para crear una confirmación de asistencia
+      required:
+        - nombre_completo
+        - correo_electronico
+        - asistira
+        - numero_invitados
+      properties:
+        nombre_completo:
+          type: string
+          description: Nombre completo del invitado
+          minLength: 3
+          example: Juan Pérez García
+        correo_electronico:
+          type: string
+          format: email
+          description: Correo electrónico válido del invitado
+          example: juan.perez@example.com
+        telefono:
+          type: string
+          nullable: true
+          description: Número de teléfono del invitado (opcional)
+          example: "+51987654321"
+        asistira:
+          type: boolean
+          description: Indica si el invitado asistirá a la boda
+          example: true
+        numero_invitados:
+          type: integer
+          description: Número de personas que asistirán (0 si no asiste)
+          minimum: 0
+          example: 2
+        cancion_favorita:
+          type: string
+          nullable: true
+          description: Canción favorita para la boda (opcional)
+          example: Bailando - Enrique Iglesias
+        mensaje:
+          type: string
+          nullable: true
+          description: Mensaje de felicitación o comentario (opcional)
+          maxLength: 500
+          example: ¡Felicidades a los novios! Muy emocionado por su boda
+
+    ErrorResponse:
+      type: object
+      description: Estructura estándar de respuesta de error
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          description: Mensaje descriptivo del error
+          example: Error al procesar la solicitud
+        error:
+          type: string
+          description: Detalles técnicos del error (opcional)
+          example: Database connection failed
+
+  examples:
+    ConfirmacionCompleta:
+      summary: Confirmación completa con todos los campos
+      value:
+        nombre_completo: Juan Pérez García
+        correo_electronico: juan.perez@example.com
+        telefono: "+51987654321"
+        asistira: true
+        numero_invitados: 2
+        cancion_favorita: Bailando - Enrique Iglesias
+        mensaje: ¡Felicidades a los novios! Muy emocionado por su boda
+
+    ConfirmacionMinima:
+      summary: Confirmación con campos mínimos requeridos
+      value:
+        nombre_completo: María López
+        correo_electronico: maria.lopez@example.com
+        asistira: true
+        numero_invitados: 1

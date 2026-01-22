@@ -4,6 +4,8 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import formularioRoutes from './routes/formularioRoutes';
 import authRoutes from './routes/authRoutes';
+import { mantenerSupabaseActivo } from './services/keepAliveService';
+import supabase from './config/supabase';
 
 dotenv.config();
 
@@ -27,6 +29,9 @@ app.get('/', (req: Request, res: Response) => {
       obtenerTodas: 'GET /boda/asistencia (🔒 Requiere autenticación)',
       login: 'POST /auth/login',
       documentacion: 'GET /api-docs'
+    },
+    status: {
+      supabase: 'Activo con Keep-Alive cada 5 minutos ⏰'
     }
   });
 });
@@ -58,4 +63,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 app.listen(PORT, () => {
   console.log(`🚀 Servidor TypeScript corriendo en http://localhost:${PORT}`);
   console.log(`📋 Endpoints disponibles en http://localhost:${PORT}/boda/asistencia`);
+  console.log(`⏰ Keep-Alive de Supabase activado (ping cada 5 minutos)`);
+  // Activar el servicio Keep-Alive
+  mantenerSupabaseActivo();
 });

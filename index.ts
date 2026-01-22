@@ -4,7 +4,6 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import formularioRoutes from './routes/formularioRoutes';
 import authRoutes from './routes/authRoutes';
-import { mantenerSupabaseActivo } from './services/keepAliveService';
 import supabase from './config/supabase';
 
 dotenv.config();

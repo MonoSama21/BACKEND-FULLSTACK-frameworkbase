@@ -70,13 +70,13 @@ class FormularioController {
             const resultado = await FormularioModel.crearConfirmacion(datos);  //ALGUN DIA VOLVER A IMPLEMENTAR LA FUNCIONALIDAD DE NOTIFICACION POR CORREO
 
             // Enviar notificación por correo (no bloquea la respuesta)
-            //enviarNotificacionAsistencia(datos).catch(err => 
-            //console.error('Error al enviar notificación por correo:', err)
-            //);
+            enviarNotificacionAsistencia(datos).catch(err => 
+                console.error('Error al enviar notificación por correo:', err)
+            );
             res.status(201).json({ 
                 success: true, 
                 message: 'Confirmación de asistencia creada exitosamente',
-                data: resultado.data
+                data: resultado
             } as ApiResponse);
 
         } catch (error: any) {

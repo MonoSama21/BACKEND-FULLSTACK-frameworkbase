@@ -71,7 +71,7 @@ class FormularioController {
 
             // Enviar notificación por correo (no bloquea la respuesta)
             //enviarNotificacionAsistencia(datos).catch(err => 
-            //console.error('Error al enviar notificación por correo:', err)
+            //    console.error('Error al enviar notificación por correo:', err)
             //);
             res.status(201).json({ 
                 success: true, 

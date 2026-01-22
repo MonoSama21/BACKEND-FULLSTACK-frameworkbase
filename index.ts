@@ -4,7 +4,6 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import formularioRoutes from './routes/formularioRoutes';
 import authRoutes from './routes/authRoutes';
-import { mantenerSupabaseActivo } from './services/keepAliveService';
 import supabase from './config/supabase';
 
 dotenv.config();
@@ -73,7 +72,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({
     success: false,
     message: 'Error interno del servidor',
-    error: err.message
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
@@ -82,12 +81,7 @@ if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`🚀 Servidor TypeScript corriendo en http://localhost:${PORT}`);
     console.log(`📋 Endpoints disponibles en http://localhost:${PORT}/boda/asistencia`);
-    console.log(`⏰ Keep-Alive de Supabase activado (ping cada 5 minutos)`);
-    // Activar el servicio Keep-Alive solo en desarrollo
-    mantenerSupabaseActivo();
   });
-} else {
-  console.log('🚀 Servidor ejecutándose en Vercel (serverless)');
 }
 
 // Exportar la app para Vercel

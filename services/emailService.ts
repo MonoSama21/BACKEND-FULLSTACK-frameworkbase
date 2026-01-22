@@ -18,6 +18,7 @@ const transporter = nodemailer.createTransport({
   socketTimeout: 10000
 });
 
+
 export const enviarNotificacionAsistencia = async (datosInvitado: any) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,

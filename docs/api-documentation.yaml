@@ -11,8 +11,8 @@ info:
     - ✅ Validación de datos
     
     ## Ambientes:
-    - **Desarrollo**: https://boda-diter-vivian-dev.onrender.com
-    - **Producción**: https://boda-diter-vivian-prod.onrender.com
+    - **Desarrollo**: https://backend-fullstack-frameworkbase-git-develop-monosama21s-projects.vercel.app
+    - **Producción**: https://backend-fullstack-frameworkbase.vercel.app
     
     ## Autenticación:
     Para acceder a los endpoints protegidos, primero debes autenticarte en `/auth/login` 
@@ -27,10 +27,10 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: https://boda-diter-vivian-prod.onrender.com
-    description: Servidor de Producción
-  - url: https://boda-diter-vivian-dev.onrender.com
-    description: Servidor de Desarrollo
+  - url: https://backend-fullstack-frameworkbase.vercel.app
+    description: Servidor de Producción (Vercel)
+  - url: https://backend-fullstack-frameworkbase-git-develop-monosama21s-projects.vercel.app
+    description: Servidor de Desarrollo (Vercel Preview)
   - url: http://localhost:3000
     description: Servidor Local
 
@@ -78,6 +78,48 @@ paths:
                       documentacion:
                         type: string
                         example: GET /api-docs
+
+  /health:
+    get:
+      tags:
+        - Raíz
+      summary: Health Check del servidor
+      description: |
+        Verifica el estado del servidor y retorna información de uptime.
+        Útil para monitoreo y keep-alive.
+      responses:
+        '200':
+          description: Servidor funcionando correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: El servidor está funcionando correctamente
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2026-01-22T10:30:00.000Z"
+                  uptime:
+                    type: object
+                    properties:
+                      segundos:
+                        type: integer
+                        example: 3600
+                      minutos:
+                        type: integer
+                        example: 60
+                      horas:
+                        type: integer
+                        example: 1
+                  ambiente:
+                    type: string
+                    example: production
 
   /auth/login:
     post:
